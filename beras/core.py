@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import numpy as np
- 
+
 from typing import TYPE_CHECKING, TypedDict, Dict, Union, Any, Optional, List, Iterable
 
 if TYPE_CHECKING:
@@ -17,9 +17,9 @@ class Tensor(np.ndarray):
         if isinstance(input_array, Tensor):
             # If the input is already a Tensor, return it as is
             return input_array
-        
-        # Task 1: input the data to construct the object. 
-        obj = np.asarray(a=???).view(type=cls)
+
+        # Task 1: input the data to construct the object.
+        obj = np.asarray(a=input_array).view(type=cls)
         obj.trainable = True
         return obj
 
@@ -44,7 +44,7 @@ class Callable(ABC):
         """
         Ensures `self()` and `self.forward()` be the same
 
-        NOTE: This behavior can (and will) be overridden by Callable subclasses, 
+        NOTE: This behavior can (and will) be overridden by Callable subclasses,
                     in particular, the `Diffable` class
         """
         return Tensor(self.forward(*args, **kwargs))
@@ -70,22 +70,26 @@ class Weighted(ABC):
     @property
     def trainable_variables(self) -> list[Tensor]:
         """Collects all trainable variables in the module"""
-        return NotImplementedError
+        return [weight for weight in self.weights if weight.trainable]
 
     @property
     def non_trainable_variables(self) -> list[Tensor]:
         """Collects all non-trainable variables in the module"""
-        return NotImplementedError
+        return [weight for weight in self.weights if not weight.trainable]
 
     @property
     def trainable(self) -> bool:
         """Returns true if any of the weights are trainable"""
-        return NotImplementedError
+        for weight in self.weights:
+            if weight.trainable:
+                return True
+        return False
 
     @trainable.setter
     def trainable(self, trainable: bool):
         """Sets the trainable status of all weights to trainable"""
-        pass 
+        for weight in self.weights:
+            weight.trainable = True
 
 
 class Diffable(Callable, Weighted):
@@ -110,7 +114,7 @@ class Diffable(Callable, Weighted):
             Abstractly, we need to do the following:
                 1. Collect all the input values and their variable names
                 2. Call the forward function with the input values
-                3. If we should be recording gradients, 
+                3. If we should be recording gradients,
                     Assign the output value's previous_layer field to be this diffable layer
                 4. Return the output value(s)
         """

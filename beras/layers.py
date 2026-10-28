@@ -18,13 +18,17 @@ class Dense(Diffable):
         """
         Forward pass for a dense layer! Refer to lecture slides for how this is computed.
         """
-        return NotImplementedError
+        return Tensor(x @ self.w + self.b)
 
     def get_input_gradients(self) -> list[Tensor]:
-        return NotImplementedError
+        return [Tensor(self.w.T)]
 
     def get_weight_gradients(self) -> list[Tensor]:
-        return NotImplementedError
+        x = self.inputs[0]
+        weight_gradients = np.expand_dims(x, axis=-1)
+        bias_gradients = np.ones_like(self.b) #this will be all constants
+
+        return [Tensor(weight_gradients), Tensor(bias_gradients)]
 
     @staticmethod
     def _initialize_weight(initializer, input_size, output_size) -> tuple[Variable, Variable]:
@@ -53,4 +57,21 @@ class Dense(Diffable):
             "kaiming",
         ), f"Unknown dense weight initialization strategy '{initializer}' requested"
 
-        return None, None
+        if initializer == "zero":
+            w = np.zeros((input_size, output_size))
+        elif initializer == "normal":
+            w = np.random.normal(loc=0, scale=1,size=(input_size, output_size))
+        elif initializer == "xavier":
+            std = np.sqrt(2 / (input_size+output_size))
+            w = np.random.normal(loc=0, scale=1,size=(input_size, output_size))
+        elif initializer == "kaiming":
+            std = np.sqrt(2 / input_size)
+
+            w = np.random.normal(
+                loc=0,
+                scale=std,
+                size=(input_size, output_size)
+            )
+        b = np.zeros(output_size) #since biases always start at 0
+
+        return Variable(w), Variable(b) #not using tensor
