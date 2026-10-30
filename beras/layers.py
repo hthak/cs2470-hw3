@@ -21,7 +21,7 @@ class Dense(Diffable):
         return Tensor(x @ self.w + self.b)
 
     def get_input_gradients(self) -> list[Tensor]:
-        return [Tensor(self.w.T)]
+        return [Tensor(self.w)]
 
     def get_weight_gradients(self) -> list[Tensor]:
         x = self.inputs[0]
@@ -63,7 +63,7 @@ class Dense(Diffable):
             w = np.random.normal(loc=0, scale=1,size=(input_size, output_size))
         elif initializer == "xavier":
             std = np.sqrt(2 / (input_size+output_size))
-            w = np.random.normal(loc=0, scale=1,size=(input_size, output_size))
+            w = np.random.normal(loc=0, scale=std,size=(input_size, output_size))
         elif initializer == "kaiming":
             std = np.sqrt(2 / input_size)
 

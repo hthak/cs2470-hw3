@@ -1,3 +1,5 @@
+from enum import unique
+
 import numpy as np
 
 from beras.core import Callable
@@ -23,10 +25,25 @@ class OneHotEncoder(Callable):
         :param data: 1D array containing labels.
             For example, data = [0, 1, 3, 3, 1, 9, ...]
         """
-        return NotImplementedError
+        self.classes = np.unique(data) #sorted unique vals
+        one_hot = np.eye(len(self.classes))
+
+        self.mapping = {}
+        for i, label in enumerate(self.classes):
+            self.mapping[label] = one_hot[i]
+
+        #1: [1, 0, 0],
+        #2: [0, 1, 0],
 
     def forward(self, data):
-        return NotImplementedError
+        if not hasattr(self, "mapping"):
+            self.fit(data)
+        encoded = []
+        for label in data:
+            encoded.append(self.mapping[label]) #in same order
+
+        return np.array(encoded)
 
     def inverse(self, data):
-        return NotImplementedError
+        index = np.argmax(data, axis=1)
+        return self.classes[index]

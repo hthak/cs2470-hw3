@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from beras.core import Diffable, Tensor
-
+import numpy as np
 class GradientTape:
 
     def __init__(self):
@@ -39,3 +39,49 @@ class GradientTape:
 
         # What tensor and what gradient is for you to implement!
         # compose_input_gradients and compose_weight_gradients are methods that will be helpful
+
+        #initially None
+        grads[id(target)] = [None]
+
+        while queue:
+            current_tensor = queue.pop(0)
+
+            #finding layer that produced this current tensor
+            layer = self.previous_layers[id(current_tensor)]
+            if layer is None:
+                continue
+
+            upstream = grads[id(current_tensor)] #get upstream gradient with this tensor
+
+            #gradients from layers parameters
+            weight_grads = layer.compose_weight_gradients(upstream)
+
+            for weight, grad in zip(layer.weights, weight_grads):
+                if grads[id(weight)] is None:
+                    grads[id(weight)] = []
+
+                grads[id(weight)].append(grad)
+
+            #gradients with respect to layers inputs
+            input_grads = layer.compose_input_gradients(upstream)
+
+            for layer_input, grad in zip(layer.inputs, input_grads):
+                if grads[id(layer_input)] is None:
+                    grads[id(layer_input)] = []
+
+                grads[id(layer_input)].append(grad)
+
+                #continue going back if input was from another layer
+                if self.previous_layers[id(layer_input)] is not None:
+                    queue.append(layer_input)
+
+        #return in same order as sources
+        result = []
+        for source in sources:
+            source_grads = grads[id(source)]
+            if source_grads is None:
+                result.append(None)
+            else:
+                result.append(Tensor(np.sum(source_grads, axis=0)))
+
+        return result
