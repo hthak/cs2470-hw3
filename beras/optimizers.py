@@ -52,7 +52,7 @@ class Adam:
             self.v[key] = (self.v[key] * self.beta_2 + (1 - self.beta_2) * grad**2)
 
             m_hat = self.m[key]/(1-self.beta_1**self.t)
-            v_hat = self.v[key]/(1-self.beta_1**self.t)
+            v_hat = self.v[key]/(1-self.beta_2**self.t)
 
             update = (self.learning_rate * m_hat)/(np.sqrt(v_hat)+self.epsilon)
             param.assign(param-update)

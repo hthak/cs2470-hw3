@@ -25,7 +25,8 @@ class Dense(Diffable):
 
     def get_weight_gradients(self) -> list[Tensor]:
         x = self.inputs[0]
-        weight_gradients = np.expand_dims(x, axis=-1)
+        weight_gradients = np.broadcast_to(x[:,:,np.newaxis],(x.shape[0], self.w.shape[0],self.w.shape[1]))
+        #weight_gradients = np.expand_dims(x, axis=-1)
         bias_gradients = np.ones_like(self.b) #this will be all constants
 
         return [Tensor(weight_gradients), Tensor(bias_gradients)]

@@ -89,7 +89,7 @@ class Sigmoid(Activation):
         """
         y = self.outputs[0]
         gradients = y * (1-y)
-        return Tensor(gradients)
+        return [Tensor(gradients)]
 
     def compose_input_gradients(self, J):
         return self.get_input_gradients()[0] * J

@@ -2,8 +2,6 @@ import numpy as np
 
 from beras.core import Diffable, Tensor
 
-import tensorflow as tf
-
 
 class Loss(Diffable):
     @property
@@ -20,8 +18,8 @@ class MeanSquaredError(Loss):
 
     def get_input_gradients(self) -> list[Tensor]:
         y_pred, y_true = self.inputs
-        num_outputs = y_pred.shape[-1]
-        pred_grad = 2 * (y_pred - y_true)/num_outputs
+        #num_outputs = y_pred.shape[-1]
+        pred_grad = 2 * (y_pred - y_true)/y_pred.size
         true_grad = np.zeros_like(y_true) #constant vector
         return [Tensor(pred_grad), Tensor(true_grad)]
 

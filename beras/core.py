@@ -89,7 +89,7 @@ class Weighted(ABC):
     def trainable(self, trainable: bool):
         """Sets the trainable status of all weights to trainable"""
         for weight in self.weights:
-            weight.trainable = True
+            weight.trainable = trainable
 
 
 class Diffable(Callable, Weighted):
